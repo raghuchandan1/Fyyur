@@ -1,3 +1,5 @@
+from sqlalchemy import ARRAY
+
 from app import db
 
 #----------------------------------------------------------------------------#
@@ -16,7 +18,7 @@ class Venue(db.Model):
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    # DONE: implement any missing fields, as a database migration using Flask-Migrate
     genres = db.Column(ARRAY(db.String()))
     website = db.Column(db.String())
     seeking_talent = db.Column(db.String())
@@ -38,7 +40,7 @@ class Artist(db.Model):
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    # DONE: implement any missing fields, as a database migration using Flask-Migrate
     seeking_venue = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(500))
     shows = db.relationship('Show', backref="Artist", lazy=True)
@@ -59,4 +61,4 @@ class Show(db.Model):
       return '<Show {}{}>'.format(self.artist_id, self.venue_id)
 
 
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+# DONE Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
