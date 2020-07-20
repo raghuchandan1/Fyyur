@@ -18,7 +18,7 @@ from forms import *
 # ----------------------------------------------------------------------------#
 # App Config.
 # ----------------------------------------------------------------------------#
-from sqlalchemy import ARRAY
+from sqlalchemy import ARRAY, func
 
 app = Flask(__name__)
 moment = Moment(app)
@@ -89,34 +89,52 @@ def venues():
     #     "num_upcoming_shows": 0,
     #   }]
     # }]
-    current_time = datetime.now().strftime('%Y-%m-%d %H:%S:%M')
-    venues = Venue.query.group_by(Venue.id, Venue.state, Venue.city).all()
-    venue_state_and_city = ''
+    # current_time = datetime.now().strftime('%Y-%m-%d %H:%S:%M')
+    # venues = Venue.query.group_by(Venue.id, Venue.state, Venue.city).all()
+    # venue_state_and_city = ''
+    # data = []
+    #
+    # # loop through venues to check for upcoming shows, city, states and venue information
+    # for venue in venues:
+    #     # filter upcoming shows given that the show start time is greater than the current time
+    #
+    #     upcoming_shows = venue.shows.filter(Show.start_time > current_time).all()
+    #     if venue_state_and_city == venue.city + venue.state:
+    #         data[len(data) - 1]["venues"].append({
+    #             "id": venue.id,
+    #             "name": venue.name,
+    #             "num_upcoming_shows": len(upcoming_shows)  # a count of the number of shows
+    #         })
+    #     else:
+    #         venue_state_and_city == venue.city + venue.state
+    #         data.append({
+    #             "city": venue.city,
+    #             "state": venue.state,
+    #             "venues": [{
+    #                 "id": venue.id,
+    #                 "name": venue.name,
+    #                 "num_upcoming_shows": len(upcoming_shows)
+    #             }]
+    #         })
+    all_areas = Venue.query.with_entities(func.count(Venue.id), Venue.city, Venue.state).group_by(Venue.city,
+                                                                                                  Venue.state).all()
     data = []
 
-    # loop through venues to check for upcoming shows, city, states and venue information
-    for venue in venues:
-        # filter upcoming shows given that the show start time is greater than the current time
-        print(venue)
-        upcoming_shows = venue.shows.filter(Show.start_time > current_time).all()
-        if venue_state_and_city == venue.city + venue.state:
-            data[len(data) - 1]["venues"].append({
+    for area in all_areas:
+        area_venues = Venue.query.filter_by(state=area.state).filter_by(city=area.city).all()
+        venue_data = []
+        for venue in area_venues:
+            venue_data.append({
                 "id": venue.id,
                 "name": venue.name,
-                "num_upcoming_shows": len(upcoming_shows)  # a count of the number of shows
+                "num_upcoming_shows": len(
+                    db.session.query(Show).filter(Show.venue_id == venue.id).filter(Show.start_time > datetime.now()).all())
             })
-        else:
-            venue_state_and_city == venue.city + venue.state
-            data.append({
-                "city": venue.city,
-                "state": venue.state,
-                "venues": [{
-                    "id": venue.id,
-                    "name": venue.name,
-                    "num_upcoming_shows": len(upcoming_shows)
-                }]
-            })
-
+        data.append({
+            "city": area.city,
+            "state": area.state,
+            "venues": venue_data
+        })
     # return render_template('pages/venues.html', areas=data)
     return render_template('pages/venues.html', areas=data)
 
@@ -363,6 +381,7 @@ def delete_venue(venue_id):
         flash(f'An error occurred. Venue {venue_id} could not be deleted.')
     if not error:
         flash(f'Venue {venue_id} was successfully deleted.')
+
     return render_template('pages/home.html')
 
 
