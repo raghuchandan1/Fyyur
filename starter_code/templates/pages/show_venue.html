@@ -97,9 +97,9 @@
 		const venueId = e.target.dataset['id']
 		console.log(venueId);
 		fetch('/venues/' + venueId, {method: 'DELETE'})
-		.then(response => {
+		.then(
         console.log('DONE')
-    })
+    	)
 	}
 </script>
 {% endblock %}
