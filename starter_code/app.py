@@ -46,7 +46,7 @@ def format_datetime(value, format='medium'):
         format = "EEEE MMMM, d, y 'at' h:mma"
     elif format == 'medium':
         format = "EE MM, dd, y h:mma"
-    return babel.dates.format_datetime(date, format)
+    return babel.dates.format_datetime(date, format, locale='en')
 
 
 app.jinja_env.filters['datetime'] = format_datetime
@@ -501,6 +501,7 @@ def show_artist(artist_id):
 
     past_shows_query = db.session.query(Show).join(Venue).filter(Show.artist_id == artist_id).filter(
         Show.start_time > datetime.now()).all()
+
     past_shows = []
 
     for show in past_shows_query:
